@@ -3,12 +3,12 @@ package com.userprofile.controller;
 import java.security.InvalidParameterException;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,16 +34,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UserProfileControler {
 
-	// @Autowired
-	// private PasswordEncoder passwordEncoder;
-
 	@Autowired
 	UserProfileService ups;
 
 	@Autowired
 	private UserProfileValidator validator;
 
-	private static Logger log = LoggerFactory.getLogger(UserProfileControler.class);
 	private static String NOT_FOUND_URL = "http://localhost/api/v1/userprofile/errors/not-found";
 	private static String ERROR_TITLE = "Resource Not Found";
 	private static String ERROR_DESCRIPTION = "Invalid user ID: cannot be null or empty";
@@ -80,6 +76,8 @@ public class UserProfileControler {
 		if (missingFields.isEmpty()) {
 
 			try {
+				String encoded = new BCryptPasswordEncoder().encode(up.getPassword());
+				up.setPassword(encoded);
 				ups.addUserProfile(up);
 			} catch (UserExecutionException | UserProfileSQLException e) {
 				thowSystemException(userId.toString(), e);

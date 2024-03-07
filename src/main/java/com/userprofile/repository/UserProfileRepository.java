@@ -11,16 +11,11 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ProblemDetail;
 import org.springframework.stereotype.Component;
-import org.springframework.web.ErrorResponseException;
 
 import com.userprofile.controller.UserProfileControler;
 import com.userprofile.exception.UserProfileSQLException;
-import com.userprofile.model.ErrorDetails;
 import com.userprofile.model.UserProfile;
-import com.userprofile.utility.ProblemDetailBuilder;
 import com.userprofile.validator.UserProfileValidator;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -30,11 +25,6 @@ public class UserProfileRepository {
 	private static Logger log = LoggerFactory.getLogger(UserProfileControler.class);
 	
 	private HikariDataSource dataSource;
-	private static String SYSTEM_ERROR = "http://localhost/api/v1/userprofile/errors/system_error";
-	private static String ERROR_TITLE = "Persistance Error";
-	private static String ERROR_DESCRIPTION = "Unable to store a new user";
-	private static String HOSTNAME = "localhost";
-
 
 	@Autowired
 	private UserProfileValidator validator;
@@ -109,8 +99,7 @@ public class UserProfileRepository {
 			statement.setString(6, up.getPhone());
 			statement.setString(7, up.getPassword());
 
-			//statement.executeUpdate();
-			statement.executeQuery();
+			statement.executeUpdate();
 		} catch (SQLException e) {
 			// Handle exceptions
 			System.err.format("******************SQL State: %s\n%s", e.getSQLState(), e.getMessage());
@@ -118,12 +107,4 @@ public class UserProfileRepository {
 			throw new UserProfileSQLException("Error while persisting a new user");
 		}
 	}
-	
-	/*private void thowException(String userId, Exception ex) {
-		ErrorDetails err = new ErrorDetails(HttpStatus.INTERNAL_SERVER_ERROR, SYSTEM_ERROR, ERROR_TITLE, ERROR_DESCRIPTION, userId,
-				HOSTNAME);
-		ProblemDetailBuilder pdb = new ProblemDetailBuilder(err);
-		ProblemDetail pd = pdb.getProbemDetail();
-		throw new ErrorResponseException(HttpStatus.INTERNAL_SERVER_ERROR, pd, ex);
-	}*/
 }
